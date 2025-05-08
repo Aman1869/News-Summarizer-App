@@ -28,9 +28,8 @@ A React.js application that fetches news articles from GNews API, allows reading
 4. Set up environment variables:
    - Create a `.env` file in the root directory with the following variables:
    ```
-   # Choose one of the following news API keys:
-   
-   
+   # Choose the following API keys:
+    
    # GNews API Key (100 requests/day on free tier)
    REACT_APP_GNEWS_API_KEY=your_gnews_api_key_here
    
