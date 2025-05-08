@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { scrapeArticleContent } from '../services/newsService';
+import { scrapeArticleContent } from '../services/gnewsService';
 import { summarizeContent } from '../services/geminiService';
 
 const ArticlePage = () => {
@@ -20,98 +20,94 @@ const ArticlePage = () => {
   const contentRef = useRef(null);
 
   useEffect(() => {
-    // Hide category bar on article page
-    const categoryBar = document.querySelector('.sticky.top-0.z-50');
-    if (categoryBar) {
-      categoryBar.style.display = 'none';
+    // Parse the article data from URL parameters
+    const searchParams = new URLSearchParams(location.search);
+    const articleData = searchParams.get('data');
+    
+    if (!articleData) {
+      setError('Article data not found.');
+      setLoading(false);
+      return;
     }
 
-    // Cleanup function to restore category bar when leaving the page
-    return () => {
-      if (categoryBar) {
-        categoryBar.style.display = 'block';
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    const fetchArticleData = async () => {
+    try {
+      const parsedArticle = JSON.parse(decodeURIComponent(articleData));
+      setArticle(parsedArticle);
+      
+      // Scrape the full content from the article URL
+      setLoading(true);
       try {
-        // Parse the article data from URL parameters
-        const searchParams = new URLSearchParams(location.search);
-        const articleData = searchParams.get('data');
+        console.log('Scraping content from URL:', parsedArticle.url);
+        scrapeArticleContent(parsedArticle.url, parsedArticle.description)
+          .then(scrapedContent => {
+            // Check if content is one of the error messages
+            const isErrorMessage = 
+              (typeof scrapedContent === 'string') && 
+              (scrapedContent.includes('could not be retrieved') || 
+               scrapedContent.includes('Failed to retrieve') ||
+               scrapedContent.length < 100);
+            
+            // Check if we got the description as fallback (by comparing with the actual description)
+            const isDescriptionFallback = 
+              (typeof scrapedContent === 'string') && 
+              (parsedArticle.description && scrapedContent === parsedArticle.description);
+            
+            if (isErrorMessage && parsedArticle.description) {
+              // Use description as fallback if scraping failed and description exists
+              console.log('Using article description as fallback after failed scraping');
+              setContent(parsedArticle.description);
+              setScrapingError(true);
+            } else if (isDescriptionFallback) {
+              // If we got the description back, it means scraping failed but we're using description
+              console.log('Using article description as fallback (returned from scrapeArticleContent)');
+              setContent(scrapedContent);
+              setScrapingError(true);
+            } else if (scrapedContent && scrapedContent.length > 100) {
+              // Successfully scraped content
+              console.log('Successfully scraped content, length:', scrapedContent.length);
+              setContent(scrapedContent);
+              setScrapingError(false);
+            } else {
+              // No valid content or description available
+              console.warn('Scraped content too short or empty:', scrapedContent);
+              setContent('Content could not be retrieved. This may be due to the website\'s scraping protection or CORS policy. Please visit the original article.');
+              setScrapingError(true);
+            }
+            setLoading(false);
+          })
+          .catch(scrapingErr => {
+            console.error('Error during content scraping:', scrapingErr);
+            
+            // If scraping failed but we have a description, use it
+            if (parsedArticle.description) {
+              console.log('Using article description after scraping error');
+              setContent(parsedArticle.description);
+              setScrapingError(true);
+            } else {
+              setContent('Failed to retrieve article content. Please check the original source.');
+              setScrapingError(true);
+            }
+            setLoading(false);
+          });
+      } catch (scrapingErr) {
+        console.error('Error during content scraping:', scrapingErr);
         
-        if (!articleData) {
-          setError('Article data not found.');
-          setLoading(false);
-          return;
+        // If scraping failed but we have a description, use it
+        if (parsedArticle.description) {
+          console.log('Using article description after scraping error');
+          setContent(parsedArticle.description);
+          setScrapingError(true);
+        } else {
+          setContent('Failed to retrieve article content. Please check the original source.');
+          setScrapingError(true);
         }
-        
-        const parsedArticle = JSON.parse(decodeURIComponent(articleData));
-        setArticle(parsedArticle);
-        
-        // Scrape the full content from the article URL
-        setLoading(true);
-        try {
-          console.log('Scraping content from URL:', parsedArticle.url);
-          const scrapedContent = await scrapeArticleContent(parsedArticle.url, parsedArticle.description);
-          
-          // Check if content is one of the error messages
-          const isErrorMessage = 
-            (typeof scrapedContent === 'string') && 
-            (scrapedContent.includes('could not be retrieved') || 
-             scrapedContent.includes('Failed to retrieve') ||
-             scrapedContent.length < 100);
-          
-          // Check if we got the description as fallback (by comparing with the actual description)
-          const isDescriptionFallback = 
-            (typeof scrapedContent === 'string') && 
-            (parsedArticle.description && scrapedContent === parsedArticle.description);
-          
-          if (isErrorMessage && parsedArticle.description) {
-            // Use description as fallback if scraping failed and description exists
-            console.log('Using article description as fallback after failed scraping');
-            setContent(parsedArticle.description);
-            setScrapingError(true);
-          } else if (isDescriptionFallback) {
-            // If we got the description back, it means scraping failed but we're using description
-            console.log('Using article description as fallback (returned from scrapeArticleContent)');
-            setContent(scrapedContent);
-            setScrapingError(true);
-          } else if (scrapedContent && scrapedContent.length > 100) {
-            // Successfully scraped content
-            console.log('Successfully scraped content, length:', scrapedContent.length);
-            setContent(scrapedContent);
-            setScrapingError(false);
-          } else {
-            // No valid content or description available
-            console.warn('Scraped content too short or empty:', scrapedContent);
-            setContent('Content could not be retrieved. This may be due to the website\'s scraping protection or CORS policy. Please visit the original article.');
-            setScrapingError(true);
-          }
-        } catch (scrapingErr) {
-          console.error('Error during content scraping:', scrapingErr);
-          
-          // If scraping failed but we have a description, use it
-          if (parsedArticle.description) {
-            console.log('Using article description after scraping error');
-            setContent(parsedArticle.description);
-            setScrapingError(true);
-          } else {
-            setContent('Failed to retrieve article content. Please check the original source.');
-            setScrapingError(true);
-          }
-        }
-        
-        setLoading(false);
-      } catch (err) {
-        console.error('Error loading article:', err);
-        setError('Failed to load article content. Please try again later.');
         setLoading(false);
       }
-    };
-
-    fetchArticleData();
+    } catch (err) {
+      console.error('Error parsing article data:', err);
+      setError('Could not load article. Invalid data format.');
+      setLoading(false);
+    }
   }, [location.search]);
 
   const handleSummarize = async () => {
@@ -165,7 +161,7 @@ const ArticlePage = () => {
       <div className="container mx-auto px-4 py-8">
         <button 
           onClick={goBack} 
-          className="mb-4 flex items-center text-slate-600 hover:text-slate-800 transition-colors"
+          className="mb-4 flex items-center text-slate-800 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white transition-colors font-medium"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -185,7 +181,7 @@ const ArticlePage = () => {
       <div className="container mx-auto px-4 py-8">
         <button 
           onClick={goBack} 
-          className="mb-4 flex items-center text-slate-600 hover:text-slate-800 transition-colors"
+          className="mb-4 flex items-center text-slate-800 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white transition-colors font-medium"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -203,7 +199,7 @@ const ArticlePage = () => {
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <button 
         onClick={goBack} 
-        className="mb-6 flex items-center text-slate-600 hover:text-slate-800 transition-colors"
+        className="mb-6 flex items-center text-slate-800 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white transition-colors font-medium"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -456,7 +452,7 @@ const ArticlePage = () => {
           {/* Footer with Link to Original */}
           <div className="flex justify-between items-center mt-8 mb-4 text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4">
             <p>News Wise © {new Date().getFullYear()}</p>
-            <p>Powered by News API & Google Gemini</p>
+            <p>Powered by GNews API & Google Gemini</p>
           </div>
         </div>
       </article>
@@ -464,4 +460,4 @@ const ArticlePage = () => {
   );
 };
 
-export default ArticlePage; 
+export default ArticlePage;
