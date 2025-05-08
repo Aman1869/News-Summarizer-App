@@ -2,13 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure dark mode background propagates to all elements */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #121827; /* Match dark:from-gray-900 */
 }
 
 code {
@@ -17,11 +28,11 @@ code {
 }
 
 /* Custom utility classes */
-.no-scrollbar::-webkit-scrollbar {
+.scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-.no-scrollbar {
+.scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
@@ -34,7 +45,7 @@ code {
 /* Animated gradient text */
 .animate-gradient {
   background-size: 200% 200%;
-  animation: gradient-shift 3s ease infinite;
+  animation: gradient-shift 4s ease infinite;
 }
 
 @keyframes gradient-shift {
@@ -73,13 +84,87 @@ code {
   transform-origin: bottom left;
 }
 
-/* Background pattern - simplified */
-.bg-pattern {
-  background-color: #f9fafb;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23475569' fill-opacity='0.05' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+/* Dots pattern - light */
+.pattern-dots-lg {
+  background-color: transparent;
+  background-image: radial-gradient(#475569 0.5px, transparent 0.5px);
+  background-size: 15px 15px;
+  background-position: 0 0;
+  opacity: 0.1;
 }
 
-.dark .bg-pattern {
-  background-color: #1a202c;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23627080' fill-opacity='0.05' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+/* Dots pattern - dark */
+.pattern-dots-dark {
+  background-color: transparent;
+  background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
+  background-size: 15px 15px;
+  background-position: 0 0;
+  opacity: 0.05;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1f1f1f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.5);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.7);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.6);
+}
+
+/* Custom selection color */
+::selection {
+  background-color: rgba(100, 116, 139, 0.2);
+  color: inherit;
+}
+
+/* Add a transition to focus states */
+a:focus, button:focus, input:focus, textarea:focus, select:focus {
+  outline: 2px solid rgba(100, 116, 139, 0.5);
+  outline-offset: 2px;
+  transition: outline-color 0.2s ease;
+}
+
+/* Custom focus style for dark mode */
+.dark a:focus, .dark button:focus, .dark input:focus, .dark textarea:focus, .dark select:focus {
+  outline: 2px solid rgba(148, 163, 184, 0.7);
+}
+
+/* Article content styles */
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  color: #334155;
+}
+
+.dark .prose h1, .dark .prose h2, .dark .prose h3, .dark .prose h4 {
+  color: #e2e8f0;
+}
+
+/* Fix link text visibility */
+.dark a {
+  color: #e2e8f0; /* text-slate-200 in Tailwind */
+}
+
+.dark a:hover {
+  color: #f8fafc; /* text-slate-50 in Tailwind */
 }
