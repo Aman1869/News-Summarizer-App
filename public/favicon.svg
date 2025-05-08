@@ -1,0 +1,17 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="32" height="32" rx="8" fill="#374151"/>
+  
+  <!-- News Icon -->
+  <path d="M25 6H7C5.9 6 5 6.9 5 8V24C5 25.1 5.9 26 7 26H25C26.1 26 27 25.1 27 24V8C27 6.9 26.1 6 25 6Z" fill="#94A3B8"/>
+  <path d="M24 8H8V19H24V8Z" fill="#F8FAFC"/>
+  
+  <!-- Text lines -->
+  <rect x="10" y="21" width="12" height="1.5" rx="0.75" fill="#F8FAFC"/>
+  <rect x="10" y="24" width="8" height="1.5" rx="0.75" fill="#F8FAFC"/>
+  
+  <!-- Lines of text in the newspaper -->
+  <rect x="10" y="10" width="12" height="1.5" rx="0.75" fill="#374151"/>
+  <rect x="10" y="13" width="12" height="1.5" rx="0.75" fill="#374151"/>
+  <rect x="10" y="16" width="8" height="1.5" rx="0.75" fill="#374151"/>
+</svg> 
