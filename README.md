@@ -1,6 +1,6 @@
 # News Summarization and Categorization Web App
 
-A React.js application that fetches news articles from the News API, allows reading the full content, and uses Google Gemini API to summarize article content.
+A React.js application that fetches news articles from GNews API, allows reading the full content, and uses Google Gemini API to summarize article content.
 
 ## Features
 
@@ -13,8 +13,9 @@ A React.js application that fetches news articles from the News API, allows read
 ## Prerequisites
 
 - Node.js and npm installed on your machine
-- News API key (from [newsapi.org](https://newsapi.org/))
-- Google Gemini API key (from [Google AI Studio](https://ai.google.dev/))
+- API key from one of the news services:
+  - GNews API key (from [gnews.io](https://gnews.io/))
+  - Google Gemini API key (from [Google AI Studio](https://ai.google.dev/))
 
 ## Setup Instructions
 
@@ -27,10 +28,16 @@ A React.js application that fetches news articles from the News API, allows read
 4. Set up environment variables:
    - Create a `.env` file in the root directory with the following variables:
    ```
-   REACT_APP_NEWS_API_KEY=your_news_api_key_here
+   # Choose one of the following news API keys:
+   
+   
+   # GNews API Key (100 requests/day on free tier)
+   REACT_APP_GNEWS_API_KEY=your_gnews_api_key_here
+   
+   # Google Gemini API key (required for summarization)
    REACT_APP_GEMINI_API_KEY=your_gemini_api_key_here
    ```
-   - Get your News API key from [newsapi.org](https://newsapi.org/)
+   - Get your GNews API key from [gnews.io](https://gnews.io/)
    - Get your Gemini API key from [Google AI Studio](https://ai.google.dev/)
 
 5. Start the development server:
@@ -38,17 +45,26 @@ A React.js application that fetches news articles from the News API, allows read
    npm start
    ```
 
+
+## Production Deployment
+
+This application can be deployed in production environments :
+
+- **GNews**: 100 requests per day on free tier
+
+Both services offer paid plans with higher request limits for production use.
+
 ## Important Notes
 
-- The News API's free tier only allows requests from localhost in development environments. For production, you'll need a paid subscription.
-- Web scraping has limitations due to CORS policies. In a production environment, you would need a backend proxy server to handle the scraping properly.
+- Web scraping has limitations due to CORS policies. In cases where the API doesn't provide full content, a proxy service is used to attempt scraping.
+- If you encounter rate limit errors, you may need to wait for the limit to reset (usually 24 hours) or switch to a different API.
 
 ## Technologies Used
 
 - React.js
 - React Router
 - Tailwind CSS
-- News API
+- GNews APIs
 - Google Gemini API
 - Axios for HTTP requests
 - Cheerio for HTML parsing
